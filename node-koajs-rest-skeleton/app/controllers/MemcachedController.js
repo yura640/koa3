@@ -48,17 +48,22 @@ module.exports = {
      * @param next
      */
     putAction: function * (next){
-
+    try{
         let setData = function(key, val, exp){
             return function(callback){
                 client.replace(key, val, exp, callback);
-                console.log(key, val, exp)
+                console.log(key, val, exp);
+
             }
         };
-
-           this.body = yield setData(this.params.key, this.request.body.value, this.request.body.expires);
-
+        this.body = yield setData(this.params.key, this.request.body.value, this.request.body.expires);
         yield next;
+        this.status = 201;
+        this.body = this.request.body;
+    } catch(e){
+        this.status = 400;
+        this.body = {message: "Bad Request"};
+    }
 
     },
 
@@ -90,6 +95,7 @@ module.exports = {
      */
 
     deleteAction: function * (next){
+        try{
         let delData = function(key){
             return function(callback){
                 client.delete(key, callback);
@@ -98,8 +104,14 @@ module.exports = {
         };
 
         this.body = yield delData(this.params.key);
-
         yield next;
+        yield next;
+        this.status = 201;
+        this.body = this.request.body;
+    } catch(e){
+        this.status = 400;
+        this.body = {message: "Bad Request"};
+    }
 
     }
 };
